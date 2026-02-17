@@ -23,6 +23,7 @@ export type Thread = {
   other_number: string;
   last_message: string | null;
   last_at: number;
+  unread: number;
 };
 
 export type Message = {

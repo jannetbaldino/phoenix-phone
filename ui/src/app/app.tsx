@@ -45,9 +45,11 @@ function Inner() {
       try {
         const profile = await nuiCall<PhoneProfile>("prp-phone:getProfile");
         phone.setProfile(profile);
-      } catch {
+      } catch (e: any) {
         phone.setProfile(null);
+        phone.addToast({ title: "Phone Error", body: String(e?.message ?? e) });
       }
+
     })();
   }, [phone.visible]);
 

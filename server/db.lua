@@ -96,7 +96,7 @@ end
 
 function DB.getThreads(citizenid)
   return MySQL.query.await(
-    'SELECT id, other_number, last_message, last_at FROM prp_phone_threads WHERE owner_citizenid = ? ORDER BY last_at DESC',
+    'SELECT id, other_number, last_message, last_at, unread FROM prp_phone_threads WHERE owner_citizenid = ? ORDER BY last_at DESC',
     { citizenid }
   ) or {}
 end
@@ -135,8 +135,8 @@ function DB.sendMessageFromCitizen(citizenid, fromNumber, toNumber, body)
       { threadIn, 'in', body, sentAt }
     )
     MySQL.update.await(
-      'UPDATE prp_phone_threads SET last_message = ?, last_at = ? WHERE id = ?',
-      { body, sentAt, threadIn }
+     'UPDATE prp_phone_threads SET last_message = ?, last_at = ?, unread = unread + 1 WHERE id = ?',
+     { body, sentAt, threadIn }
     )
     return receiver.citizenid
   end
@@ -187,6 +187,13 @@ function DB.transferByPhone(fromCitizen, toPhone, amount, note)
   DB.addBankTx(toRow.citizenid, 'transfer_in', amount, note or ('From ' .. '???'))
 
   return toRow.citizenid, nil
+end
+
+function DB.markThreadRead(citizenid, threadId)
+  MySQL.update.await(
+    'UPDATE prp_phone_threads SET unread = 0 WHERE id = ? AND owner_citizenid = ?',
+    { threadId, citizenid }
+  )
 end
 
 return DB

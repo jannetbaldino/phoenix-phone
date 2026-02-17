@@ -5,9 +5,20 @@ end
 
 local function getCitizenId(src)
   local player = exports.qbx_core:GetPlayer(src)
-  if not player or not player.PlayerData then return nil end
-  return player.PlayerData.citizenid
+  if not player then return nil end
+
+  local pd = player.PlayerData or player
+
+  -- try common shapes across qbx/qb forks
+  local cid =
+    (pd.citizenid or pd.citizenId)
+    or (pd.charinfo and (pd.charinfo.citizenid or pd.charinfo.citizenId))
+    or (player.PlayerData and (player.PlayerData.citizenid or player.PlayerData.citizenId))
+
+  if cid and cid ~= '' then return cid end
+  return nil
 end
+
 
 local function notifyByCitizenId(citizenid, payload)
   local players = exports.qbx_core:GetQBPlayers()
@@ -79,9 +90,15 @@ end
 handlers['prp-phone:getThreadMessages'] = function(src, payload)
   local cid = getCitizenId(src)
   if not cid then return nil, 'no_player' end
+
   local threadId = tonumber(payload and payload.thread_id or 0) or 0
   local limit = tonumber(payload and payload.limit or 50) or 50
+
   if threadId <= 0 then return nil, 'bad_thread' end
+
+  -- Mark messages as read when player opens thread
+  DB.markThreadRead(cid, threadId)
+
   return DB.getThreadMessages(cid, threadId, limit), nil
 end
 
@@ -177,3 +194,12 @@ RegisterNetEvent('phoenix-phone:rpc', function(reqId, name, payload)
 
   TriggerClientEvent('phoenix-phone:rpc:resp', src, reqId, true, a)
 end)
+
+RegisterCommand('phone_testnotif', function(src)
+  if src <= 0 then return end
+  TriggerClientEvent('prp-phone:notify', src, {
+    title = "Test",
+    body = "Notification peek works",
+    app = "messages"
+  })
+end, false)

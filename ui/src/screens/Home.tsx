@@ -1,9 +1,22 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { usePhone } from "../app/state";
+import { nuiCall } from "../app/nui";
+import type { Thread } from "../app/types";
 
-function Icon({ label, onClick }: { label: string; onClick: () => void }) {
+function Icon({
+  label,
+  onClick,
+  badge,
+}: {
+  label: string;
+  onClick: () => void;
+  badge?: number;
+}) {
   return (
     <button onClick={onClick} style={icon}>
+      {badge !== undefined && badge > 0 ? (
+        <div style={badgeStyle}>{badge > 99 ? "99+" : badge}</div>
+      ) : null}
       <div style={{ fontSize: 12, color: "var(--text)" }}>{label}</div>
     </button>
   );
@@ -11,6 +24,19 @@ function Icon({ label, onClick }: { label: string; onClick: () => void }) {
 
 export default function Home() {
   const phone = usePhone();
+
+  const [threads, setThreads] = useState<Thread[]>([]);
+
+  useEffect(() => {
+    // Pull threads so we can show unread badge on Messages icon.
+    nuiCall<Thread[]>("prp-phone:getThreads")
+      .then((t) => setThreads(t ?? []))
+      .catch(() => setThreads([]));
+  }, []);
+
+  const unreadTotal = useMemo(() => {
+    return (threads ?? []).reduce((sum, t) => sum + (t.unread ?? 0), 0);
+  }, [threads]);
 
   return (
     <div>
@@ -23,7 +49,11 @@ export default function Home() {
 
       <div style={grid}>
         <Icon label="Settings" onClick={() => phone.push({ id: "settings" })} />
-        <Icon label="Messages" onClick={() => phone.push({ id: "messages" })} />
+        <Icon
+          label="Messages"
+          badge={unreadTotal}
+          onClick={() => phone.push({ id: "messages" })}
+        />
         <Icon label="Contacts" onClick={() => phone.push({ id: "contacts" })} />
         <Icon label="Mail" onClick={() => phone.push({ id: "mail" })} />
         <Icon label="Banking" onClick={() => phone.push({ id: "banking" })} />
@@ -42,10 +72,11 @@ export default function Home() {
 const grid: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(3, 1fr)",
-  gap: 10
+  gap: 10,
 };
 
 const icon: React.CSSProperties = {
+  position: "relative",
   height: 86,
   borderRadius: 18,
   border: "1px solid var(--border)",
@@ -53,7 +84,25 @@ const icon: React.CSSProperties = {
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
-  justifyContent: "center"
+  justifyContent: "center",
+};
+
+const badgeStyle: React.CSSProperties = {
+  position: "absolute",
+  top: 10,
+  right: 10,
+  minWidth: 18,
+  height: 18,
+  padding: "0 6px",
+  borderRadius: 999,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 11,
+  fontWeight: 700,
+  background: "rgba(120,160,255,0.95)",
+  color: "white",
+  border: "1px solid rgba(255,255,255,0.25)",
 };
 
 const panel: React.CSSProperties = {
@@ -61,5 +110,5 @@ const panel: React.CSSProperties = {
   padding: 12,
   borderRadius: 18,
   border: "1px solid var(--border)",
-  background: "rgba(255,255,255,0.05)"
+  background: "rgba(255,255,255,0.05)",
 };
