@@ -1,10 +1,32 @@
 :root {
-  --bg: rgba(15, 15, 18, 0.92);
-  --panel: rgba(255, 255, 255, 0.06);
-  --text: rgba(255, 255, 255, 0.92);
-  --muted: rgba(255, 255, 255, 0.65);
-  --border: rgba(255, 255, 255, 0.12);
-  --accent: rgba(120, 160, 255, 0.95);
+  /* Core */
+  --bg: rgba(18, 18, 20, 0.92);
+  --bg2: rgba(24, 24, 28, 0.92);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.62);
+
+  /* Borders / surfaces */
+  --border: rgba(255,255,255,0.12);
+  --surface: rgba(255,255,255,0.06);
+  --surface2: rgba(255,255,255,0.09);
+
+  /* Accent (Android-ish blue) */
+  --accent: rgba(120,160,255,0.95);
+  --accentSoft: rgba(120,160,255,0.22);
+  --accentSoft2: rgba(120,160,255,0.12);
+
+  /* States */
+  --success: rgba(90, 210, 140, 0.95);
+  --danger: rgba(255, 105, 120, 0.95);
+  --warn: rgba(255, 200, 90, 0.95);
+
+  /* Shadow */
+  --shadow: 0 18px 50px rgba(0,0,0,0.45);
+
+  /* Wallpaper tint (subtle) */
+  --wallpaperGlow: radial-gradient(1200px 800px at 20% 10%,
+    rgba(120,160,255,0.20),
+    rgba(0,0,0,0) 60%);
 }
 
 * { box-sizing: border-box; }

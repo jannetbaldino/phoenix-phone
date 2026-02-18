@@ -13,7 +13,7 @@ function Icon({
   badge?: number;
 }) {
   return (
-    <button onClick={onClick} style={icon}>
+    <button type="button" onClick={onClick} style={icon}>
       {badge !== undefined && badge > 0 ? (
         <div style={badgeStyle}>{badge > 99 ? "99+" : badge}</div>
       ) : null}
@@ -24,15 +24,13 @@ function Icon({
 
 export default function Home() {
   const phone = usePhone();
-
   const [threads, setThreads] = useState<Thread[]>([]);
 
   useEffect(() => {
-    // Pull threads so we can show unread badge on Messages icon.
     nuiCall<Thread[]>("prp-phone:getThreads")
       .then((t) => setThreads(t ?? []))
       .catch(() => setThreads([]));
-  }, []);
+  }, [phone.tick]);
 
   const unreadTotal = useMemo(() => {
     return (threads ?? []).reduce((sum, t) => sum + (t.unread ?? 0), 0);
@@ -80,7 +78,7 @@ const icon: React.CSSProperties = {
   height: 86,
   borderRadius: 18,
   border: "1px solid var(--border)",
-  background: "rgba(255,255,255,0.06)",
+  background: "var(--surface)",
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
@@ -110,5 +108,5 @@ const panel: React.CSSProperties = {
   padding: 12,
   borderRadius: 18,
   border: "1px solid var(--border)",
-  background: "rgba(255,255,255,0.05)",
+  background: "var(--surface)",
 };

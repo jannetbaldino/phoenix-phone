@@ -129,6 +129,17 @@ handlers['prp-phone:sendMessage'] = function(src, payload)
   return true, nil
 end
 
+handlers['prp-phone:getOrCreateThread'] = function(src, payload)
+  local cid = getCitizenId(src)
+  if not cid then return nil, 'no_player' end
+
+  local other = tostring(payload and payload.other_number or '')
+  other = other:gsub('%s+', '')
+  if other == '' then return nil, 'bad_number' end
+
+  return DB.getOrCreateThread(cid, other), nil
+end
+
 handlers['prp-phone:getBank'] = function(src, _payload)
   local cid = getCitizenId(src)
   if not cid then return nil, 'no_player' end

@@ -2,14 +2,14 @@ import React, { useEffect } from "react";
 import { PhoneProvider, usePhone } from "./state";
 import PhoneShell from "../components/PhoneShell";
 import { nuiCall, nuiClose } from "./nui";
-import type { PhoneProfile, ToastPayload } from "./types";
+import type { PhoneProfile } from "./types";
 
 function Inner() {
   const phone = usePhone();
 
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
-      const d = e.data;
+      const d: any = e.data;
       if (!d || typeof d !== "object") return;
 
       if (d.type === "phone:setVisible") {
@@ -22,17 +22,24 @@ function Inner() {
       }
 
       if (d.type === "phone:toast") {
-        phone.addToast((d.toast ?? {}) as ToastPayload);
+        phone.pushToast(d.toast ?? {});
+      }
+
+      if (d.type === "phone:openApp") {
+        phone.openApp(d.id, d.params);
       }
     };
 
     window.addEventListener("message", onMsg);
-    // Tell client we're ready (optional)
-    fetch(`https://${(window as any).GetParentResourceName?.() ?? "nui"}/phone:ready`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: "{}"
-    }).catch(() => {});
+
+    fetch(
+      `https://${(window as any).GetParentResourceName?.() ?? "nui"}/phone:ready`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      }
+    ).catch(() => {});
 
     return () => window.removeEventListener("message", onMsg);
   }, [phone]);
@@ -40,16 +47,14 @@ function Inner() {
   useEffect(() => {
     if (!phone.visible) return;
 
-    // Load profile when phone opens
     (async () => {
       try {
         const profile = await nuiCall<PhoneProfile>("prp-phone:getProfile");
         phone.setProfile(profile);
       } catch (e: any) {
         phone.setProfile(null);
-        phone.addToast({ title: "Phone Error", body: String(e?.message ?? e) });
+        phone.pushToast({ title: "Phone Error", body: String(e?.message ?? e) });
       }
-
     })();
   }, [phone.visible]);
 

@@ -64,6 +64,32 @@ function DB.saveSettings(citizenid, settings)
   return true
 end
 
+function DB.getOrCreateThread(ownerCid, otherNumber)
+  local t = MySQL.single.await(
+    'SELECT id, owner_citizenid, other_number, last_message, last_at, unread FROM prp_phone_threads WHERE owner_citizenid = ? AND other_number = ? LIMIT 1',
+    { ownerCid, otherNumber }
+  )
+
+  if t and t.id then
+    return t
+  end
+
+  local now = os.time()
+  local id = MySQL.insert.await(
+    'INSERT INTO prp_phone_threads (owner_citizenid, other_number, last_message, last_at, unread) VALUES (?, ?, ?, ?, 0)',
+    { ownerCid, otherNumber, '', now }
+  )
+
+  return {
+    id = id,
+    owner_citizenid = ownerCid,
+    other_number = otherNumber,
+    last_message = '',
+    last_at = now,
+    unread = 0
+  }
+end
+
 -- Contacts
 function DB.getContacts(citizenid)
   return MySQL.query.await('SELECT id, name, phone_number, notes FROM prp_phone_contacts WHERE owner_citizenid = ? ORDER BY name ASC', { citizenid }) or {}

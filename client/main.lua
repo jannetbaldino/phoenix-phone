@@ -183,6 +183,24 @@ RegisterNUICallback('phone:ready', function(_, cb)
   cb(true)
 end)
 
+RegisterNUICallback('phone:notifClick', function(data, cb)
+  data = data or {}
+
+  -- Always open the phone when clicking a notification
+  if not PHONE_OPEN then
+    openPhone()
+  end
+
+  -- Tell UI to navigate to the app (and pass context)
+  nui({
+    type = 'phone:openApp',
+    id = tostring(data.app or ''),
+    params = data
+  })
+
+  cb(true)
+end)
+
 -- =========================
 -- RPC (NO ox_lib)
 -- =========================
@@ -251,8 +269,15 @@ end)
 
 RegisterNetEvent('prp-phone:notify', function(payload)
   payload = payload or {}
+
+  -- Always push toast into UI
   nui({ type = 'phone:toast', toast = payload })
 
+  -- Sound + tiny "vibration" even if phone is closed
+  PlaySoundFrontend(-1, "CONFIRM_BEEP", "HUD_MINI_GAME_SOUNDSET", true)
+  ShakeGameplayCam("SMALL_EXPLOSION_SHAKE", 0.015)
+
+  -- If phone is open, no peek needed
   if PHONE_OPEN then return end
   if PEEKING then return end
   PEEKING = true

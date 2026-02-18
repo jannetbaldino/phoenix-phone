@@ -73,7 +73,7 @@ const card: React.CSSProperties = {
   padding: 12,
   borderRadius: 18,
   border: "1px solid var(--border)",
-  background: "rgba(255,255,255,0.05)"
+  background: "var(--surface)"
 };
 
 const input: React.CSSProperties = {
